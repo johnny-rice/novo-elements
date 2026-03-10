@@ -3,12 +3,15 @@ import {
   ChangeDetectorRef,
   Component,
   ComponentRef,
+  DestroyRef,
   ElementRef,
   EventEmitter,
   forwardRef,
+  inject,
   Input,
   OnInit,
   Output,
+  Renderer2,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
@@ -20,6 +23,7 @@ import { ComponentUtils } from 'novo-elements/services';
 import { Helpers, Key, notify } from 'novo-elements/utils';
 import { NovoOverlayTemplateComponent } from 'novo-elements/elements/common';
 import { PickerResults } from './extras/picker-results/PickerResults';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 // Value accessor for the component (supports ngModel)
 const PICKER_VALUE_ACCESSOR = {
@@ -159,6 +163,10 @@ export class NovoPickerElement implements OnInit {
   onModelChange: Function = () => {};
   onModelTouched: Function = () => {};
 
+  destroyRef = inject(DestroyRef);
+  renderer = inject(Renderer2);
+
+
   constructor(public element: ElementRef, private componentUtils: ComponentUtils, private ref: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -172,16 +180,10 @@ export class NovoPickerElement implements OnInit {
     // Custom results template
     this.resultsComponent = this.config.resultsTemplate || PickerResults;
 
-    const pasteObserver = fromEvent(this.input.nativeElement, 'paste').pipe(debounceTime(debounceTimeInMilliSeconds), distinctUntilChanged());
-    pasteObserver.subscribe(
-      (event: ClipboardEvent) => this.onDebouncedKeyup(event),
-      (err) => this.hideResults(err),
-    );
-    const keyboardObserver = fromEvent(this.input.nativeElement, 'keyup').pipe(debounceTime(debounceTimeInMilliSeconds), distinctUntilChanged());
-    keyboardObserver.subscribe(
-      (event: KeyboardEvent) => this.onDebouncedKeyup(event),
-      (err) => this.hideResults(err),
-    );
+    const pasteObserver = fromEvent(this.input.nativeElement, 'paste').pipe(takeUntilDestroyed(this.destroyRef), debounceTime(debounceTimeInMilliSeconds), distinctUntilChanged());
+    pasteObserver.subscribe((event: ClipboardEvent) => this.onDebouncedKeyup(event));
+    const keyboardObserver = fromEvent(this.input.nativeElement, 'keyup').pipe(takeUntilDestroyed(this.destroyRef), debounceTime(debounceTimeInMilliSeconds), distinctUntilChanged());
+    keyboardObserver.subscribe((event: KeyboardEvent) => this.onDebouncedKeyup(event));
   }
 
   private onDebouncedKeyup(event: KeyboardEvent | ClipboardEvent) {

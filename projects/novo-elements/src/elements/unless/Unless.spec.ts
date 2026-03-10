@@ -1,4 +1,4 @@
-import { TemplateRef, ViewContainerRef } from '@angular/core';
+import { DestroyRef, TemplateRef, ViewContainerRef } from '@angular/core';
 import { Security } from 'novo-elements/services';
 import { Unless } from './Unless';
 
@@ -9,6 +9,7 @@ describe('Unless Directive', () => {
   let templateRef: jest.Mocked<TemplateRef<any>>;
   let viewContainer: jest.Mocked<ViewContainerRef>;
   let security: jest.Mocked<Security>;
+  let destroyRef: jest.Mocked<DestroyRef>;
 
   beforeEach(() => {
     templateRef = {
@@ -25,7 +26,11 @@ describe('Unless Directive', () => {
       has: jest.fn(),
     } as any;
 
-    directive = new Unless(templateRef, viewContainer, security);
+    destroyRef = {
+      onDestroy: jest.fn(),
+    }
+
+    directive = new Unless(templateRef, viewContainer, security, destroyRef);
   });
 
   describe('constructor', () => {
