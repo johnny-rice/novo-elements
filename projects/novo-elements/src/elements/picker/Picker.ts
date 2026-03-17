@@ -7,11 +7,9 @@ import {
   ElementRef,
   EventEmitter,
   forwardRef,
-  inject,
   Input,
   OnInit,
   Output,
-  Renderer2,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
@@ -163,11 +161,12 @@ export class NovoPickerElement implements OnInit {
   onModelChange: Function = () => {};
   onModelTouched: Function = () => {};
 
-  destroyRef = inject(DestroyRef);
-  renderer = inject(Renderer2);
 
-
-  constructor(public element: ElementRef, private componentUtils: ComponentUtils, private ref: ChangeDetectorRef) {}
+  constructor(
+    public element: ElementRef,
+    private componentUtils: ComponentUtils,
+    private ref: ChangeDetectorRef,
+    private destroyRef: DestroyRef) {}
 
   ngOnInit() {
     if (this.overrideElement) {
@@ -181,9 +180,15 @@ export class NovoPickerElement implements OnInit {
     this.resultsComponent = this.config.resultsTemplate || PickerResults;
 
     const pasteObserver = fromEvent(this.input.nativeElement, 'paste').pipe(takeUntilDestroyed(this.destroyRef), debounceTime(debounceTimeInMilliSeconds), distinctUntilChanged());
-    pasteObserver.subscribe((event: ClipboardEvent) => this.onDebouncedKeyup(event));
+    pasteObserver.subscribe({
+      next: (event: ClipboardEvent) => this.onDebouncedKeyup(event),
+      error: (err) => this.hideResults(err),
+    });
     const keyboardObserver = fromEvent(this.input.nativeElement, 'keyup').pipe(takeUntilDestroyed(this.destroyRef), debounceTime(debounceTimeInMilliSeconds), distinctUntilChanged());
-    keyboardObserver.subscribe((event: KeyboardEvent) => this.onDebouncedKeyup(event));
+    keyboardObserver.subscribe({
+      next: (event: KeyboardEvent) => this.onDebouncedKeyup(event),
+      error: (err) => this.hideResults(err),
+    });
   }
 
   private onDebouncedKeyup(event: KeyboardEvent | ClipboardEvent) {

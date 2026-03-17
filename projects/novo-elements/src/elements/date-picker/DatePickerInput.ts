@@ -14,7 +14,6 @@ import {
   SimpleChanges,
   ViewChild,
   forwardRef,
-  inject,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 // Vendor
@@ -201,13 +200,13 @@ export class NovoDatePickerInputElement implements OnInit, OnChanges, AfterViewI
   /** Element for the panel containing the autocomplete options. */
   @ViewChild(NovoOverlayTemplateComponent)
   overlay: NovoOverlayTemplateComponent;
-  destroyRef = inject(DestroyRef);
 
   constructor(
     public element: ElementRef,
     public labels: NovoLabelService,
     private _changeDetectorRef: ChangeDetectorRef,
     public dateFormatService: DateFormatService,
+    private destroyRef: DestroyRef,
   ) {
     this.placeholder = this.labels.localizedDatePlaceholder();
   }
