@@ -483,6 +483,12 @@ describe('Unless Directive', () => {
       expect(viewContainer.createEmbeddedView).toHaveBeenCalledWith(templateRef);
     });
 
+    it('should safely dispose even if Security is using old void implementation', () => {
+      security.subscribe.mockImplementation((() => {}) as any);
+      (destroyRef.onDestroy as jest.Mock).mock.calls[0][0]();
+      // Expect no error
+    });
+
     it('should handle OR and AND combinations', () => {
       security.has.mockImplementation((perm: string) => {
         return perm === 'admin' || perm === 'user';

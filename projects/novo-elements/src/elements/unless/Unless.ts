@@ -18,7 +18,10 @@ export class Unless {
     private destroyRef: DestroyRef) {
     const sub = this.security.subscribe(this.check.bind(this));
     this.destroyRef.onDestroy(() => {
-      sub.unsubscribe();
+      // If Security uses an old definition, subscribe will return void/undefined.
+      try {
+        sub?.unsubscribe();
+      } catch {}
     });
   }
 
