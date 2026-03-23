@@ -64,7 +64,10 @@ export class NovoCodeEditor implements ControlValueAccessor, OnInit, OnDestroy, 
   }
 
   ngOnDestroy(): void {
-
+    if (this.editorView) {
+      this.editorView.destroy();
+      this.editorView = null;
+    }
   }
 
   ngAfterViewInit(): void {
